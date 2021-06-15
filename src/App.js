@@ -38,8 +38,8 @@ function App() {
     setArray(res);
     computerRemove(event);
 
-    if (res.length === 1) {
-      alert("You are win!!!");
+    if (res.length === 1 || res.length === 0) {
+      alert("You win!!!");
       reset();
       if (!changeMode) {
         firstMove();
@@ -56,11 +56,10 @@ function App() {
     setArray([...array]);
 
     if (array.length === 1) {
-      alert("You are lose!!!");
+      alert("You lose!!!");
       reset();
 
       if (!changeMode) {
-        console.log(firstMove());
         firstMove();
       }
     }
@@ -70,7 +69,8 @@ function App() {
     <>
       {start ? (
         <div>
-          <button className='button-back'
+          <button
+            className="button-back"
             onClick={() => {
               toggleStart();
               reset();
