@@ -1,30 +1,46 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Home from "./components/Home";
+import Matches from "./components/Matches";
 
 function App() {
-  const startArray = new Array(25).fill("🦴");
-  const [array, setArray] = useState(startArray);
+  const [count, setCount] = useState(25);
   const [start, setStart] = useState(false);
-  const [userArray, setUserArray] = useState([]);
-  const [computerArray, setComputerArray] = useState([]);
+  const [userCount, setUserCount] = useState(0);
+  const [computerCount, setComputerCount] = useState(0);
   const [changeMode, setChangeMode] = useState(true);
 
   const firstMove = useCallback(() => {
     const number = Math.floor(Math.random() * (4 - 1)) + 1;
-    const takenMatches = array.splice(array.length - number, number);
-    setComputerArray((prevArray) => [...prevArray, ...takenMatches]);
-  }, [array]);
+    setCount(count - number);
+    setComputerCount((prevCount) => prevCount + number);
+  }, []);
 
   useEffect(() => {
     if (start && !changeMode) {
       firstMove();
     }
   }, [changeMode, start, firstMove]);
+  useEffect(() => {
+    if (count === 1) {
+      alert("You lose!!!");
+      reset();
+      if (!changeMode) {
+        firstMove();
+      }
+    }
+    if (count === 0) {
+      alert("You win!!!");
+      reset();
+      if (!changeMode) {
+        firstMove();
+      }
+    }
+  }, [count, changeMode, firstMove]);
 
   const reset = () => {
-    setArray(startArray);
-    setUserArray([]);
-    setComputerArray([]);
+    setCount(25);
+    setUserCount(0);
+    setComputerCount(0);
   };
   const toggleStart = () => setStart(!start);
 
@@ -32,37 +48,15 @@ function App() {
 
   const onRemove = (event) => {
     const num = Number(event.target.textContent);
-    const takenMatches = array.splice(array.length - num, num);
-    setUserArray((prevArray) => [...prevArray, ...takenMatches]);
-    const res = [...array];
-    setArray(res);
+    setUserCount((prevCount) => prevCount + num);
+
+    setCount((prevCount) => prevCount - (4 - num));
     computerRemove(event);
-
-    if (res.length === 1 || res.length === 0) {
-      alert("You win!!!");
-      reset();
-      if (!changeMode) {
-        firstMove();
-      }
-    }
   };
-
   const computerRemove = (event) => {
     const num = Number(event.target.textContent);
-
-    const takenMatches = array.splice(array.length - (4 - num), 4 - num);
-
-    setComputerArray((prevArray) => [...prevArray, ...takenMatches]);
-    setArray([...array]);
-
-    if (array.length === 1) {
-      alert("You lose!!!");
-      reset();
-
-      if (!changeMode) {
-        firstMove();
-      }
-    }
+    setComputerCount((prevCount) => prevCount + (4 - num));
+    setCount((prevCount) => prevCount - num);
   };
 
   return (
@@ -78,39 +72,28 @@ function App() {
           >
             🔙
           </button>
-          <ul>
-            {computerArray.map((arr, index) => (
-              <li key={index}>{arr}</li>
-            ))}
-          </ul>
-          <h2>Matches left : {array.length}</h2>
-          <ul>
-            {array.map((arr, index) => (
-              <li key={index}>{arr}</li>
-            ))}
-          </ul>
+
+          <Matches count={computerCount} />
+          <h2>Matches left : {count}</h2>
+          <Matches count={count} />
 
           <ul className="buttons">
             <li>
               <button onClick={onRemove}>1</button>
             </li>
-            {array.length > 2 && (
+            {count > 2 && (
               <li>
                 <button onClick={onRemove}>2</button>
               </li>
             )}
-            {array.length > 3 && (
+            {count > 3 && (
               <li>
                 <button onClick={onRemove}>3</button>
               </li>
             )}
           </ul>
 
-          <ul>
-            {userArray.map((arr, index) => (
-              <li key={index}>{arr}</li>
-            ))}
-          </ul>
+          <Matches count={userCount} />
         </div>
       ) : (
         <Home
